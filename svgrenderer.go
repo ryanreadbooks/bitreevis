@@ -1,15 +1,42 @@
-package render
+package bitreevis
 
 import (
 	"fmt"
+	"io"
 	"math"
+	"os"
 	"strconv"
 	"strings"
 
 	svg "github.com/ajstarks/svgo"
-
-	"github.com/ryanreadbooks/bitreevis/layout"
 )
+
+// SvgRenderResult implements the RenderResult interface.
+// It is the render result for SvgRenderer
+type SvgRenderResult struct {
+	// content holds the rendered data
+	content io.Reader
+	// Error stores the error generated during rendering, Error if nil if no error occurs.
+	e error
+}
+
+func (r *SvgRenderResult) GetContent() io.Reader {
+	return r.content
+}
+
+func (r *SvgRenderResult) Save(filename string) error {
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = io.Copy(f, r.content)
+	return err
+}
+
+func (r *SvgRenderResult) Error() error {
+	return r.e
+}
 
 type SvgRenderer struct {
 	Canvas svg.SVG
@@ -31,7 +58,7 @@ func NewSvgRenderer() *SvgRenderer {
 }
 
 // Render performs rendering process for specified binary tree.
-func (sr *SvgRenderer) Render(root *layout.PlaceableNode, option *RenderOption) *RenderResult {
+func (sr *SvgRenderer) Render(root *PlaceableNode, option *RenderOption) RenderResult {
 
 	// init svg renderer
 	nodes, stats := root.CollectNodesWithStat()
@@ -54,15 +81,15 @@ func (sr *SvgRenderer) Render(root *layout.PlaceableNode, option *RenderOption) 
 	sr.Canvas.End()
 
 	// organize RenderResult instance
-	rr := &RenderResult{
-		Content: strings.NewReader(sr.buf.String()),
-		Error:   nil,
+	rr := &SvgRenderResult{
+		content: strings.NewReader(sr.buf.String()),
+		e:       nil,
 	}
 
 	return rr
 }
 
-func (sr *SvgRenderer) initRenderer(stats *layout.SizeLimitStat, opt *RenderOption) {
+func (sr *SvgRenderer) initRenderer(stats *SizeLimitStat, opt *RenderOption) {
 	// we use boxWidth to ensure root node is at the center of graphic
 	// because root is always at (0,0) in relative coordinate
 	boxWidth := math.Max(math.Abs(float64(stats.MinX)), math.Abs(float64(stats.MaxX))) * 2
@@ -100,7 +127,7 @@ func (sr *SvgRenderer) defineArrow(opt *RenderOption) {
 	sr.Canvas.DefEnd()
 }
 
-func (sr *SvgRenderer) addNode(node *layout.PlaceableNode, radius int, opt *RenderOption) {
+func (sr *SvgRenderer) addNode(node *PlaceableNode, radius int, opt *RenderOption) {
 	// render node as a circle with radius centered at (node.x, node.y)
 	nodeStyleAttr := make([]svgStyleAttribute, 0, 1)
 
@@ -154,7 +181,7 @@ func (sr *SvgRenderer) addText(x, y float32, text string, opt *RenderOption) {
 	})
 }
 
-func (sr *SvgRenderer) addEdge(node *layout.PlaceableNode, opt *RenderOption) {
+func (sr *SvgRenderer) addEdge(node *PlaceableNode, opt *RenderOption) {
 	// set edge style attributes
 	edgeStyleAttr := make([]svgStyleAttribute, 0, 2)
 	var linewidth int = DefaultEdgeLineWidth

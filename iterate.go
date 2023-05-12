@@ -1,14 +1,7 @@
-package bitree
-
-func maxInt(i, j int) int {
-	if i > j {
-		return i
-	}
-	return j
-}
+package bitreevis
 
 // CalHeight calculates the height of a binary tree in a recursive manner.
-// 
+//
 // If root does not have any children, CalHeight returns 0.
 func CalHeight(root BiNode) int {
 	if BiNodeIsNil(root) {
@@ -18,7 +11,7 @@ func CalHeight(root BiNode) int {
 }
 
 // CollectNodeByLevelOrder collects all nodes in a binary tree in level order.
-// 
+//
 // CollectNodeByLevelOrder returns nodes from top to down, from left to right, in the form of [][]BiNode
 func CollectNodeByLevelOrder(root BiNode) [][]BiNode {
 	nodes := make([]BiNode, 0)

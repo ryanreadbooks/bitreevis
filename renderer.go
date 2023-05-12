@@ -1,10 +1,8 @@
-package render
+package bitreevis
 
 import (
 	"io"
 	"math"
-
-	"github.com/ryanreadbooks/bitreevis/layout"
 )
 
 // Default settings for the graphic
@@ -21,18 +19,29 @@ const (
 	DefaultEdgeLineWidth = 2
 )
 
-// RenderResult contains rendered output from renderer
+// RenderResult contains rendered output from renderer.
 //
-// RenderResult contains a io.Reader to store the rendered result(for example, bytes, string, etc.)
-type RenderResult struct {
-	// Content holds the rendered data
-	Content io.Reader
-	// Error stores the error generated during rendering, Error if nil if no error occurs.
-	Error error
+// RenderResult should contain a reader which can be read (for example, bytes, string, etc.) from the outsize.
+// Content() method returns a io.Reader which provides access to the rendered data.
+//
+// Save method can save the rendered result to the given filepath.
+//
+// Error method provides a way for the user to check the error occurred during the rendering process.
+// If no error occurs during rendering, Error should return nil.
+type RenderResult interface {
+	// GetContent return an io.Reader which can be used to access the rendered data.
+	GetContent() io.Reader
+
+	// Save helps save the rendered data into a given file.
+	Save(string) error
+
+	// Error returns the error occurred during rendering. If no error occurs, it returns nil.
+	Error() error
 }
 
+// Render is the interface which defines how to render the binary tree.
 type Renderer interface {
-	Render(*layout.PlaceableNode, RenderOption) (*RenderResult, error)
+	Render(*PlaceableNode, RenderOption) RenderResult
 }
 
 // RenderOption is the options of graphics when rendering.

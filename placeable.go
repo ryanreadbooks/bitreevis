@@ -1,8 +1,6 @@
-package layout
+package bitreevis
 
-import (
-	"github.com/ryanreadbooks/bitreevis/bitree"
-)
+import ()
 
 type extreme struct {
 	addr   *PlaceableNode
@@ -32,11 +30,11 @@ func (p *PlaceableNode) IsLeaf() bool {
 }
 
 // Implement interface BiNode for placeableNode
-func (p *PlaceableNode) GetLeftChild() bitree.BiNode {
+func (p *PlaceableNode) GetLeftChild() BiNode {
 	return p.Left
 }
 
-func (p *PlaceableNode) GetRightChild() bitree.BiNode {
+func (p *PlaceableNode) GetRightChild() BiNode {
 	return p.Right
 }
 
@@ -97,13 +95,13 @@ func NewPlaceableNode(field string) *PlaceableNode {
 }
 
 // NewPlaceableTreeFromBiNode builds a tree made of placeableNode from a tree made of BiNode
-func NewPlaceableTreeFromBiNode(root bitree.BiNode) *PlaceableNode {
+func NewPlaceableTreeFromBiNode(root BiNode) *PlaceableNode {
 	return buildPlaceableTreeRecursive(root)
 }
 
 // buildPlaceableTreeRecursive help build tree in a recursive manner
-func buildPlaceableTreeRecursive(root bitree.BiNode) *PlaceableNode {
-	if bitree.BiNodeIsNil(root) {
+func buildPlaceableTreeRecursive(root BiNode) *PlaceableNode {
+	if BiNodeIsNil(root) {
 		return nil
 	}
 	pRoot := NewPlaceableNode(root.GetField())
@@ -117,18 +115,4 @@ func buildPlaceableTreeRecursive(root bitree.BiNode) *PlaceableNode {
 	}
 
 	return pRoot
-}
-
-func minFloat32(i, j float32) float32 {
-	if i > j {
-		return j
-	}
-	return i
-}
-
-func maxFloat32(i, j float32) float32 {
-	if i > j {
-		return i
-	}
-	return j
 }

@@ -1,16 +1,13 @@
-package render_test
+package bitreevis_test
 
 import (
-	"io"
 	"os"
 	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/ryanreadbooks/bitreevis/bitree"
-	"github.com/ryanreadbooks/bitreevis/layout"
-	"github.com/ryanreadbooks/bitreevis/render"
+	"github.com/ryanreadbooks/bitreevis"
 )
 
 type myNode struct {
@@ -19,11 +16,11 @@ type myNode struct {
 	Value int
 }
 
-func (m *myNode) GetLeftChild() bitree.BiNode {
+func (m *myNode) GetLeftChild() bitreevis.BiNode {
 	return m.Left
 }
 
-func (m *myNode) GetRightChild() bitree.BiNode {
+func (m *myNode) GetRightChild() bitreevis.BiNode {
 	return m.Right
 }
 
@@ -43,8 +40,8 @@ func TestSvgRenderer_Dev(t *testing.T) {
 	node6.Right = node2
 	node19.Left = node3
 
-	pRoot := layout.NewPlaceableTreeFromBiNode(root)
-	opt := render.RenderOption{
+	pRoot := bitreevis.NewPlaceableTreeFromBiNode(root)
+	opt := bitreevis.RenderOption{
 		SiblingSeparation: 30,
 		LevelSeparation:   40,
 		NodeRadius:        50,
@@ -57,15 +54,11 @@ func TestSvgRenderer_Dev(t *testing.T) {
 		EdgeWithArrow:     true,
 		EdgeArrowSize:     5,
 	}
-	pRoot = layout.PerformLayout(pRoot, opt.SiblingSeparation, opt.NodeRadius, opt.LevelSeparation)
+	pRoot = bitreevis.PerformLayout(pRoot, opt.SiblingSeparation, opt.NodeRadius, opt.LevelSeparation)
 
-	renderer := render.NewSvgRenderer()
+	renderer := bitreevis.NewSvgRenderer()
 	result := renderer.Render(pRoot, &opt)
-	require.Nil(t, result.Error)
-	f, err := os.Create("dev.svg")
-	require.Nil(t, err)
-	defer f.Close()
-	_, err = io.Copy(f, result.Content)
-	require.Nil(t, err)
+	require.Nil(t, result.Error())
+	require.Nil(t, result.Save("dev.svg"))
 	os.Remove("dev.svg")
 }
