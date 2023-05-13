@@ -20,6 +20,7 @@ type PlaceableNode struct {
 	Offset float32
 	Thread bool
 	Field  string
+	Color  string
 }
 
 func (p *PlaceableNode) IsLeaf() bool {
@@ -99,12 +100,16 @@ func NewPlaceableTreeFromBiNode(root BiNode) *PlaceableNode {
 	return buildPlaceableTreeRecursive(root)
 }
 
-// buildPlaceableTreeRecursive help build tree in a recursive manner
+// buildPlaceableTreeRecursive helps build tree in a recursive manner
 func buildPlaceableTreeRecursive(root BiNode) *PlaceableNode {
 	if BiNodeIsNil(root) {
 		return nil
 	}
 	pRoot := NewPlaceableNode(root.GetField())
+	if color, ok := isPaintable(root); ok {
+		pRoot.Color = color
+	}
+
 	pRoot.Left = buildPlaceableTreeRecursive(root.GetLeftChild())
 	if pRoot.Left != nil {
 		pRoot.Left.Parent = pRoot

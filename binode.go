@@ -33,3 +33,23 @@ func BiNodeIsNil(node BiNode) bool {
 	}
 	return false
 }
+
+// PaintableBiNode represents a node whose color is private.
+// You can implement this interface if you want each of your node to have different colors.
+type PaintableBiNode interface {
+	BiNode
+
+	// GetColor returns a color string for this node.
+	GetColor() string
+}
+
+// isPaintable helps check the input data of BiNode has a method called 'GetColor'
+// If 'GetColor' method exists
+func isPaintable(root BiNode) (string, bool) {
+	v, ok := root.(PaintableBiNode)
+	if ok {
+		return v.GetColor(), true
+	}
+
+	return "", false
+}

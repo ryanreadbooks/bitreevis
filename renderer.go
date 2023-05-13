@@ -22,7 +22,7 @@ const (
 // RenderResult contains rendered output from renderer.
 //
 // RenderResult should contain a reader which can be read (for example, bytes, string, etc.) from the outsize.
-// Content() method returns a io.Reader which provides access to the rendered data.
+// GetContent() method returns an io.Reader which provides access to the rendered data.
 //
 // Save method can save the rendered result to the given filepath.
 //

@@ -20,10 +20,13 @@ type SvgRenderResult struct {
 	e error
 }
 
+// GetContent returns the inner buffer of the rendered result
+// The actual type of the returned io.Reader is strings.Reader.
 func (r *SvgRenderResult) GetContent() io.Reader {
 	return r.content
 }
 
+// Save save the svg graphic into the given file.
 func (r *SvgRenderResult) Save(filename string) error {
 	f, err := os.Create(filename)
 	if err != nil {
@@ -38,6 +41,7 @@ func (r *SvgRenderResult) Error() error {
 	return r.e
 }
 
+// SvgRenderer is a renderer which can render the binary tree into svg format.
 type SvgRenderer struct {
 	Canvas svg.SVG
 	buf    *strings.Builder
@@ -62,10 +66,11 @@ func (sr *SvgRenderer) Render(root *PlaceableNode, option *RenderOption) RenderR
 
 	// init svg renderer
 	nodes, stats := root.CollectNodesWithStat()
-	sr.initRenderer(stats, option)
+	w, _ := sr.initRenderer(stats, option)
 
 	// we should do global shift here to place the element in the absolute positions
-	shiftX := float32(math.Abs(float64(stats.MinX))) + float32(option.NodeRadius) + float32(option.HorizontalPadding)
+	// shiftX := float32(math.Abs(float64(stats.MinX))) + float32(option.NodeRadius) + float32(option.HorizontalPadding)
+	shiftX := w / 2 // we simply put the root at center horizontally
 	shiftY := float32(option.NodeRadius) + float32(option.VerticalPadding)
 	sr.Canvas.Group(fmt.Sprintf(`transform="translate(%.3f,%.3f)"`, shiftX, shiftY))
 
@@ -89,11 +94,10 @@ func (sr *SvgRenderer) Render(root *PlaceableNode, option *RenderOption) RenderR
 	return rr
 }
 
-func (sr *SvgRenderer) initRenderer(stats *SizeLimitStat, opt *RenderOption) {
+func (sr *SvgRenderer) initRenderer(stats *SizeLimitStat, opt *RenderOption) (float32, float32) {
 	// we use boxWidth to ensure root node is at the center of graphic
 	// because root is always at (0,0) in relative coordinate
 	boxWidth := math.Max(math.Abs(float64(stats.MinX)), math.Abs(float64(stats.MaxX))) * 2
-	// width := math.Abs(float64(stats.MinX)-float64(stats.MaxX)) + float64(option.NodeRadius)*2 + float64(option.HorizontalPadding)*2
 	width := boxWidth + float64(opt.NodeRadius)*2 + float64(opt.HorizontalPadding)*2
 	height := math.Abs(float64(stats.MinY)-float64(stats.MaxY)) + float64(opt.NodeRadius)*2 + float64(opt.VerticalPadding)*2
 
@@ -104,6 +108,8 @@ func (sr *SvgRenderer) initRenderer(stats *SizeLimitStat, opt *RenderOption) {
 	}
 
 	sr.setGlobalBackgroundColor(int(width), int(height), opt.BackgroundColor)
+
+	return float32(width), float32(height)
 }
 
 func (sr *SvgRenderer) defineArrow(opt *RenderOption) {
@@ -133,13 +139,17 @@ func (sr *SvgRenderer) addNode(node *PlaceableNode, radius int, opt *RenderOptio
 
 	var nodeColor string
 	isLeaf := node.IsLeaf()
-	if isLeaf {
-		nodeColor = opt.NodeLeafColor
+	if node.Color == "" { // if no color is specified for this node locally, then use global color
+		if isLeaf {
+			nodeColor = opt.NodeLeafColor
+		} else {
+			nodeColor = opt.NodeColor
+		}
+		if nodeColor == "" {
+			nodeColor = DefaultNodeColor
+		}
 	} else {
-		nodeColor = opt.NodeColor
-	}
-	if nodeColor == "" {
-		nodeColor = DefaultNodeColor
+		nodeColor = node.Color
 	}
 	nodeStyleAttr = append(nodeStyleAttr, svgStyleAttribute{key: "fill", value: nodeColor})
 
