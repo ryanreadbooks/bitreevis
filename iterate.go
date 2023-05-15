@@ -2,7 +2,7 @@ package bitreevis
 
 // CalHeight calculates the height of a binary tree in a recursive manner.
 //
-// If root does not have any children, CalHeight returns 0.
+// If root does not have any children, CalHeight returns 1. If root is nil, returns 0.
 func CalHeight(root BiNode) int {
 	if BiNodeIsNil(root) {
 		return 0
